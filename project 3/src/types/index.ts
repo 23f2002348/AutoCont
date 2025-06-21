@@ -9,6 +9,13 @@ export interface Agent {
   currentTask?: string;
 }
 
+export interface VideoAgent extends Agent {
+  type: VideoAgentType;
+  videosCreated: number;
+  averageDuration: number;
+  currentVideoFormat?: string;
+}
+
 export interface ContentItem {
   id: string;
   title: string;
@@ -22,6 +29,26 @@ export interface ContentItem {
   content: string;
   metadata: ContentMetadata;
   assignedAgents: string[];
+  feedback?: ContentFeedback[];
+  videoContent?: VideoContent;
+}
+
+export interface ContentFeedback {
+  id: string;
+  feedback: string;
+  timestamp: string;
+  status: 'pending' | 'addressed' | 'rejected';
+}
+
+export interface VideoContent {
+  id: string;
+  type: 'reel' | 'video' | 'short';
+  duration: number;
+  format: string;
+  status: 'pending' | 'generating' | 'completed' | 'failed';
+  url?: string;
+  thumbnail?: string;
+  script?: string;
 }
 
 export interface ContentMetadata {
@@ -30,6 +57,8 @@ export interface ContentMetadata {
   platform: string[];
   estimated_reach: number;
   trending_topics: string[];
+  video_requested?: boolean;
+  video_status?: string;
 }
 
 export interface SystemMetrics {
@@ -39,6 +68,8 @@ export interface SystemMetrics {
   content_pipeline_count: number;
   daily_output: number;
   success_rate: number;
+  videos_created: number;
+  reels_created: number;
 }
 
 export interface GoogleADKConfig {
@@ -54,7 +85,12 @@ export type AgentType =
   | 'optimizer' 
   | 'publisher' 
   | 'analyzer' 
-  | 'coordinator';
+  | 'coordinator'
+  | 'reviewer';
+
+export type VideoAgentType = 
+  | 'video_creator'
+  | 'reel_creator';
 
 export type AgentStatus = 
   | 'idle' 
@@ -69,7 +105,9 @@ export type ContentType =
   | 'video_script' 
   | 'email' 
   | 'ad_copy' 
-  | 'blog_post';
+  | 'blog_post'
+  | 'reel'
+  | 'video';
 
 export type ContentStatus = 
   | 'research' 
@@ -78,4 +116,5 @@ export type ContentStatus =
   | 'review' 
   | 'approved' 
   | 'published' 
-  | 'archived';
+  | 'archived'
+  | 'revision_requested';

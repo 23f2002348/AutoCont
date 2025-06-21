@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Bot, Settings, BarChart3, FileText, Zap } from 'lucide-react';
+import { Bot, Settings, BarChart3, FileText, Zap, Video, Eye } from 'lucide-react';
 import AgentCard from './components/AgentCard';
+import VideoAgentCard from './components/VideoAgentCard';
 import ContentPipeline from './components/ContentPipeline';
+import ContentViewer from './components/ContentViewer';
 import SystemMetrics from './components/SystemMetrics';
 import GoogleADKSetup from './components/GoogleADKSetup';
 import { useAgentSystem } from './hooks/useAgentSystem';
@@ -9,8 +11,8 @@ import { googleADK } from './services/googleADK';
 import { GoogleADKConfig } from './types';
 
 function App() {
-  const { agents, content, metrics, pauseAgent, resumeAgent } = useAgentSystem();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'agents' | 'content' | 'settings'>('dashboard');
+  const { agents, videoAgents, content, metrics, pauseAgent, resumeAgent, updateContent, requestRevision } = useAgentSystem();
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'agents' | 'content' | 'review' | 'settings'>('dashboard');
   const [googleConfig, setGoogleConfig] = useState<GoogleADKConfig | null>(null);
 
   const handleSaveGoogleConfig = (config: GoogleADKConfig) => {
@@ -38,6 +40,7 @@ function App() {
     { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'agents', label: 'Agents', icon: <Bot className="w-4 h-4" /> },
     { id: 'content', label: 'Content', icon: <FileText className="w-4 h-4" /> },
+    { id: 'review', label: 'Review', icon: <Eye className="w-4 h-4" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> }
   ];
 
@@ -60,6 +63,10 @@ function App() {
             <div className="flex items-center space-x-4">
               <div className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
                 {googleConfig ? 'Google ADK Connected' : 'Setup Required'}
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-400">
+                <Video className="w-4 h-4" />
+                <span>{metrics.videos_created + metrics.reels_created} Videos Created</span>
               </div>
             </div>
           </div>
@@ -101,13 +108,22 @@ function App() {
               <div>
                 <h3 className="text-xl font-bold text-white mb-4">Active Agents</h3>
                 <div className="grid gap-4">
-                  {agents.slice(0, 4).map((agent) => (
-                    <AgentCard
-                      key={agent.id}
-                      agent={agent}
-                      onPause={pauseAgent}
-                      onResume={resumeAgent}
-                    />
+                  {[...agents, ...videoAgents].slice(0, 4).map((agent) => (
+                    'videosCreated' in agent ? (
+                      <VideoAgentCard
+                        key={agent.id}
+                        agent={agent}
+                        onPause={pauseAgent}
+                        onResume={resumeAgent}
+                      />
+                    ) : (
+                      <AgentCard
+                        key={agent.id}
+                        agent={agent}
+                        onPause={pauseAgent}
+                        onResume={resumeAgent}
+                      />
+                    )
                   ))}
                 </div>
               </div>
@@ -118,25 +134,52 @@ function App() {
         )}
 
         {activeTab === 'agents' && (
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-6">Agent Management</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {agents.map((agent) => (
-                <AgentCard
-                  key={agent.id}
-                  agent={agent}
-                  onPause={pauseAgent}
-                  onResume={resumeAgent}
-                />
-              ))}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-6">Content Agents</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {agents.map((agent) => (
+                  <AgentCard
+                    key={agent.id}
+                    agent={agent}
+                    onPause={pauseAgent}
+                    onResume={resumeAgent}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-6">Video & Reel Agents</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {videoAgents.map((agent) => (
+                  <VideoAgentCard
+                    key={agent.id}
+                    agent={agent}
+                    onPause={pauseAgent}
+                    onResume={resumeAgent}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === 'content' && (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-6">Content Management</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">Content Pipeline</h2>
             <ContentPipeline content={content} />
+          </div>
+        )}
+
+        {activeTab === 'review' && (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Content Review & Management</h2>
+            <ContentViewer 
+              content={content}
+              onUpdateContent={updateContent}
+              onRequestRevision={requestRevision}
+            />
           </div>
         )}
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { SystemMetrics as SystemMetricsData } from '../types';
-import { Activity, Target, Users, Zap, TrendingUp, Award } from 'lucide-react';
+import { Activity, Target, Users, Zap, TrendingUp, Award, Video, Film } from 'lucide-react';
 
 interface SystemMetricsProps {
   metrics: SystemMetricsData;
@@ -37,6 +37,20 @@ const SystemMetrics: React.FC<SystemMetricsProps> = ({ metrics }) => {
       change: '+24%'
     },
     {
+      label: 'Videos Created',
+      value: metrics.videos_created,
+      icon: <Video className="w-5 h-5" />,
+      color: 'from-pink-500 to-pink-600',
+      change: '+45%'
+    },
+    {
+      label: 'Reels Created',
+      value: metrics.reels_created,
+      icon: <Film className="w-5 h-5" />,
+      color: 'from-cyan-500 to-cyan-600',
+      change: '+67%'
+    },
+    {
       label: 'Daily Output',
       value: metrics.daily_output,
       icon: <Zap className="w-5 h-5" />,
@@ -53,7 +67,7 @@ const SystemMetrics: React.FC<SystemMetricsProps> = ({ metrics }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {metricCards.map((metric, index) => (
         <div
           key={metric.label}
